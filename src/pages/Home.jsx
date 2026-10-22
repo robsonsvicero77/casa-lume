@@ -6,6 +6,7 @@ import BrandStory from '../components/BrandStory.jsx';
 import Ritual from '../components/Ritual.jsx';
 import Newsletter from '../components/Newsletter.jsx';
 import { supabase } from '../lib/products.js';
+import Testimonials from '../components/Testimonials.jsx';
 
 export default function Home({ products, addToCart }) {
   const [email, setEmail] = useState('');
@@ -19,6 +20,6 @@ export default function Home({ products, addToCart }) {
     else setNotice('Não foi possível cadastrar agora. Tente novamente.');
   }
   return <>
-    <main id="inicio"><Hero/><Values/><ProductCatalog products={products} addToCart={addToCart}/><BrandStory/><Ritual/><Newsletter email={email} setEmail={setEmail} subscribed={subscribed} onSubmit={subscribe} notice={notice}/></main>
+    <main id="inicio"><Hero/><Values/><ProductCatalog products={products} addToCart={addToCart}/><BrandStory/><Ritual/><Testimonials/><Newsletter email={email} setEmail={setEmail} subscribed={subscribed} onSubmit={subscribe} notice={notice}/></main>
   </>;
 }

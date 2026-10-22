@@ -1,6 +1,6 @@
 # Casa Lume · velas artesanais
 
-Loja responsiva em React e Vite com catálogo ligado opcionalmente ao Supabase e pedidos encaminhados ao WhatsApp.
+Loja em React e Vite com catálogo, checkout pelo WhatsApp e painel de gestão ligado ao Supabase.
 
 ## Iniciar localmente
 
@@ -9,23 +9,29 @@ npm install
 npm run dev
 ```
 
-Copie `.env.example` para `.env.local` para configurar Supabase e o número de WhatsApp. O catálogo de demonstração funciona sem conexão.
+Configure `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` e `VITE_WHATSAPP_NUMBER` em `.env.local`.
+
+## Painel administrativo
+
+O painel em `/admin/login` inclui pedidos, produtos com upload de imagens e controle de estoque, usuários administrativos, clientes e depoimentos. Coleções e Instagram Feed não fazem parte do painel.
+
+1. Execute `supabase/schema.sql` e depois `supabase/admin.sql` no SQL Editor do Supabase.
+2. Crie uma conta em **Authentication → Users** e libere-a usando o SQL de exemplo no final de `admin.sql`.
+3. Publique convites administrativos com `supabase functions deploy invite-admin` (Supabase CLI).
+
+No cadastro do produto, informe as unidades disponíveis. O checkout registra um pedido pendente e reserva a quantidade antes de abrir o WhatsApp. O ID do pedido é incluído na mensagem. Se o cliente não pagar, cancele o pedido no painel para devolver a quantidade ao estoque. Os pedidos também podem ser confirmados, enviados e concluídos pelo painel. O cadastro público de clientes fica em `/cadastro`; depoimentos aprovados aparecem na página inicial.
 
 ## Páginas
 
-- `/` — início e destaques da marca
-- `/produtos` — catálogo com busca e filtros por perfil aromático
-- `/produto/:id` — detalhes, quantidade e adicionar à sacola
-- `/sacola` — itens, resumo e finalização pelo WhatsApp
-- `/sobre` — história e valores artesanais
-- `/contato` — mensagem encaminhada ao WhatsApp
-- `/duvidas` — perguntas frequentes
-- rota não encontrada — página 404 com retorno à loja
+- `/`, `/produtos` e `/produto/:id` — vitrine e catálogo
+- `/sacola` — sacola e checkout pelo WhatsApp
+- `/sobre`, `/contato` e `/duvidas` — páginas institucionais
+- `/cadastro` — cadastro de clientes
+- `/admin/login` — acesso administrativo
 
-## Estrutura do código
+## Configuração
 
-- `src/pages/` contém as páginas e seus fluxos.
-- `src/components/` contém navegação, catálogo, cartões, sacola, conteúdo e elementos de interface reutilizáveis.
-- `src/lib/` contém acesso ao Supabase e formatação de moeda.
-- `supabase/schema.sql` cria as tabelas e adiciona produtos de demonstração.
+- `supabase/schema.sql` configura o catálogo e a newsletter.
+- `supabase/admin.sql` configura permissões, estoque, pedidos, clientes, depoimentos e Storage.
+- `supabase/functions/invite-admin/` contém a função segura para convidar administradores.
 - `CONFIGURACAO-VERCEL-SUPABASE.md` explica configuração e publicação.
