@@ -1,0 +1,3 @@
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import ProductCard from './ProductCard.jsx';
+export default function ProductCatalog({ products, addToCart }){return <section className="collection wrap" id="colecao"><div className="section-title"><div><label className="eyebrow">ENCONTRE SEU MOMENTO</label><h2>A coleção <em>lume</em></h2></div><a className="text-link" href="#ritual">como escolher seu aroma <ArrowUpRight size={15}/></a></div><div className="grid">{products.map(product=><ProductCard key={product.id} product={product} addToCart={addToCart}/>)}</div><div className="collection-foot"><span>Pequenos lotes. Grandes momentos.</span><a className="button outline" href="#ritual">descubra nossos rituais <ArrowRight size={15}/></a></div></section>}

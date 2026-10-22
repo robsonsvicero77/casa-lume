@@ -1,0 +1,3 @@
+import { ArrowUpRight, Flame, Instagram } from 'lucide-react';
+import { Link } from 'react-router-dom';
+export default function Footer(){return <footer><div className="foot-top"><Link className="logo" to="/"><i><Flame size={19}/></i><span>casa lume<small>VELAS ARTESANAIS</small></span></Link><p>Que a sua casa tenha sempre<br/>um lugar pra respirar.</p><a href="https://instagram.com" target="_blank" rel="noreferrer"><Instagram size={16}/> vem ver de perto <ArrowUpRight size={14}/></a></div><div className="foot-bottom"><span>© 2026 Casa Lume · feito com calma no Brasil</span><span><Link to="/duvidas">trocas e cuidados</Link>　 ·　<Link to="/contato">fale com a gente</Link></span><span>acenda seu momento　✳</span></div></footer>}
