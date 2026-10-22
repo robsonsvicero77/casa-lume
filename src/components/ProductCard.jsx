@@ -1,8 +1,53 @@
 import { ArrowRight, Plus } from 'lucide-react';
-import { money } from '../lib/format.js';
 import { Link } from 'react-router-dom';
-export default function ProductCard({product,addToCart}){
-  const hasInventory=product.stock!==undefined&&product.stock!==null;
-  const soldOut=hasInventory&&Number(product.stock)<1;
-  return <article className="product"><Link className="photo" to={`/produto/${product.id}`} aria-label={`Ver vela ${product.name}`}><img src={product.image} alt={`Vela artesanal ${product.name}`} loading="lazy"/><span className="tag">{product.tag||'Feita à mão'}</span><span className="quick"><ArrowRight size={15}/> ver detalhes</span></Link><div className="product-line"><Link to={`/produto/${product.id}`}><h3>{product.name}</h3></Link><b>{money(product.price)}</b></div><p className="scent">{product.scent}</p><small>{product.size||'Cera vegetal · pavio de algodão'}{hasInventory&&!soldOut?` · ${product.stock} em estoque`:''}</small><button className="add-product" onClick={()=>addToCart(product)} disabled={soldOut}><Plus size={14}/>{soldOut?'sem estoque':'adicionar à sacola'}</button></article>;
+import { money } from '../lib/format.js';
+
+export default function ProductCard({ product, addToCart }) {
+  const hasInventory = product.stock !== undefined && product.stock !== null;
+  const soldOut = hasInventory && Number(product.stock) < 1;
+
+  return (
+    <article className="product">
+      <Link
+        className="photo"
+        to={`/produto/${product.id}`}
+        aria-label={`Ver vela ${product.name}`}
+      >
+        <img
+          src={product.image}
+          alt={`Vela artesanal ${product.name}`}
+          loading="lazy"
+        />
+        <span className="tag">{product.tag || 'Feita à mão'}</span>
+        <span className="quick">
+          <ArrowRight size={15} /> ver detalhes
+        </span>
+      </Link>
+
+      <div className="product-line">
+        <Link to={`/produto/${product.id}`}>
+          <h3>{product.name}</h3>
+        </Link>
+        <b>{money(product.price)}</b>
+      </div>
+
+      <p className="scent">{product.scent}</p>
+      <div className="product-content">
+        <small>
+          {product.size || 'Cera vegetal · pavio de algodão'}
+          {hasInventory && !soldOut ? ` · ${product.stock} em estoque` : ''}
+        </small>
+
+        <button
+          className="add-product"
+          onClick={() => addToCart(product)}
+          disabled={soldOut}
+        >
+          <Plus size={14} />
+          {soldOut ? 'sem estoque' : 'adicionar à sacola'}
+        </button>
+      </div>
+
+    </article>
+  );
 }

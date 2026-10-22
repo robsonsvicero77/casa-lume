@@ -20,6 +20,14 @@ export default function Home({ products, addToCart }) {
     else setNotice('Não foi possível cadastrar agora. Tente novamente.');
   }
   return <>
-    <main id="inicio"><Hero/><Values/><ProductCatalog products={products} addToCart={addToCart}/><BrandStory/><Ritual/><Testimonials/><Newsletter email={email} setEmail={setEmail} subscribed={subscribed} onSubmit={subscribe} notice={notice}/></main>
+    <main id="inicio">
+      <Hero/>
+      <Values/>
+      <ProductCatalog products={products} addToCart={addToCart}/>
+      <BrandStory/>
+      <Ritual/>
+      <Testimonials/>
+      <Newsletter email={email} setEmail={setEmail} subscribed={subscribed} onSubmit={subscribe} notice={notice}/>
+    </main>
   </>;
 }

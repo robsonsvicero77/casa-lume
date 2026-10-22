@@ -46,6 +46,11 @@ button {
   align-items: center;
   gap: 13px;
 }
+
+.announcement p {
+  font-size: 12px !important;
+}
+
 .announcement span {
   font-size: 13px;
   color: #e8cba2;
@@ -96,6 +101,11 @@ button {
   font-size: 12px;
   color: #596159;
 }
+
+.nav a {
+  font-size: 1em;
+}
+
 .nav a:hover,
 .text-link:hover {
   color: #ad7651;
@@ -106,7 +116,7 @@ button {
   gap: 12px;
   background: none;
   border: 0;
-  font-size: 12px;
+  font-size: 16px;
 }
 .bag i {
   width: 24px;
@@ -159,7 +169,7 @@ button {
 .manifesto-copy > p,
 .ritual > div > p,
 .newsletter p {
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1.9;
   color: #73786f;
   max-width: 395px;
@@ -171,7 +181,8 @@ button {
   gap: 17px;
   border: 1px solid transparent;
   padding: 15px 20px;
-  font-size: 10px;
+  font-size: 16px;
+  text-transform: uppercase;
   letter-spacing: 0.07em;
   transition: 0.2s;
 }
@@ -190,13 +201,13 @@ button {
   gap: 13px;
   align-items: center;
   margin-top: 48px;
-  font-size: 10px;
+  font-size: 14px;
   line-height: 1.5;
   color: #72786f;
 }
 .note span {
-  width: 72px;
-  height: 27px;
+  width: 88px;
+  height: 28px;
   border-radius: 20px;
   background: #e6dfd1;
   display: grid;
@@ -231,7 +242,10 @@ button {
   gap: 6px;
   color: #657566;
   text-align: center;
-  font: 12px/1.25 var(--serif);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+  font-family: var(--serif);
   transform: rotate(8deg);
 }
 .hero-image > small {
@@ -267,7 +281,7 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
-  font: 12px var(--serif);
+  font: 14px var(--serif);
 }
 .values svg {
   width: 17px;
@@ -362,22 +376,32 @@ button {
   margin-top: 13px;
 }
 .product-line h3 {
-  font: 500 17px var(--serif);
+  font: 500 20px var(--serif);
   margin: 0;
 }
 .product-line b {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
 }
 .scent {
-  font-size: 9px;
+  font-size: 12px;
   color: #81847b;
   margin: 5px 0;
 }
 .product > small {
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.04em;
   color: #8a8c82;
+}
+.product-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.product-content .add-product {
+  flex-shrink: 0;
+  padding-top: 0;
 }
 .collection-foot {
   display: flex;
@@ -930,16 +954,22 @@ footer {
     margin-top: 9px;
   }
   .product-line h3 {
-    font-size: 15px;
+    font-size: 16px;
   }
   .scent {
-    font-size: 8px;
-  }
-  .product-line b {
     font-size: 10px;
   }
+  .product-line b {
+    font-size: 12px;
+  }
   .product > small {
-    font-size: 7px;
+    font-size: 9px;
+  }
+  .product-content {
+    gap: 6px;
+  }
+  .product-content .add-product {
+    font-size: 10px;
   }
   .photo {
     aspect-ratio: 0.78;
@@ -1072,12 +1102,13 @@ footer {
 .add-product {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
   border: 0;
   background: none;
   padding: 10px 0 0;
   color: #526454;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.04em;
 }
 .add-product:hover {
@@ -1093,7 +1124,7 @@ footer {
   gap: 8px;
 }
 .header .bag > svg {
-  display: none;
+  display: block;
 }
 .page-shell {
   min-height: 55vh;
@@ -1619,6 +1650,12 @@ footer {
   color: #7d8178;
   margin: 0 0 21px;
 }
+
+/* Keep supporting text readable without changing heading sizes. */
+body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.logo):not(.logo *):not(.bag):not(.bag *):not(.stamp):not(.stamp *) {
+  font-size: max(13px, 1em);
+}
+
 @media (max-width: 850px) {
   .breadcrumbs {
     padding-left: 6%;
@@ -1657,6 +1694,10 @@ footer {
   }
 }
 @media (max-width: 620px) {
+  body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.logo):not(.logo *):not(.bag):not(.bag *) {
+    font-size: max(12px, 1em);
+  }
+
   .header .bag > svg {
     display: block;
   }
