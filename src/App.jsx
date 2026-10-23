@@ -51,7 +51,8 @@ function Store(){
       return;
     }
 
-    const popup = window.open("about:blank", "_blank");
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const popup = isMobile ? null : window.open("about:blank", "_blank");
     setCartOpen(false);
     submitAccountCheckout()
       .then(({ url }) => {

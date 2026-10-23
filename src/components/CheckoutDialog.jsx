@@ -24,7 +24,8 @@ export default function CheckoutDialog({
   async function continueCheckout(checkoutAction) {
     setLoading(true);
     setError("");
-    const popup = window.open("about:blank", "_blank");
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const popup = isMobile ? null : window.open("about:blank", "_blank");
 
     try {
       const result = await checkoutAction();
@@ -62,7 +63,8 @@ export default function CheckoutDialog({
   async function chooseGuest() {
     setLoading(true);
     setError("");
-    const popup = window.open("about:blank", "_blank");
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const popup = isMobile ? null : window.open("about:blank", "_blank");
 
     try {
       const { url } = await onGuestCheckout();
