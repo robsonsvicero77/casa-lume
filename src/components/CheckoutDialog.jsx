@@ -1,7 +1,179 @@
-import { useState } from 'react';
-import { ArrowRight, CheckCircle2, X } from 'lucide-react';
-export default function CheckoutDialog({onClose,onSubmit}){
- const [values,setValues]=useState({name:'',email:'',phone:''}),[loading,setLoading]=useState(false),[error,setError]=useState(''),[whatsAppUrl,setWhatsAppUrl]=useState(''),[registered,setRegistered]=useState(false);
- async function submit(e){e.preventDefault();setLoading(true);setError('');const popup=window.open('about:blank','_blank');try{const result=await onSubmit(values);setWhatsAppUrl(result.url);setRegistered(result.registered);if(popup)popup.location.href=result.url;}catch(err){popup?.close();setError(err.code==='PGRST202'||err.code==='42883'?'A função de checkout não está instalada no Supabase. Execute supabase/admin.sql no SQL Editor depois de schema.sql.':err.message||'Não foi possível preparar o pedido. Confira o estoque e tente novamente.');}finally{setLoading(false);}}
- return <div className="checkout-overlay" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget&&!loading)onClose()}}><section className="checkout-dialog" role="dialog" aria-modal="true" aria-labelledby="checkout-title"><button className="checkout-close" onClick={onClose} aria-label="Fechar" disabled={loading}><X size={19}/></button>{whatsAppUrl?<><CheckCircle2 size={30} className="checkout-check"/><span className="eyebrow">{registered?'PEDIDO REGISTRADO':'PEDIDO PRONTO'}</span><h2 id="checkout-title">{registered?'Seu pedido está reservado':'Continue pelo WhatsApp'}</h2><p>{registered?'Conclua a conversa pelo WhatsApp para combinar pagamento e entrega. O pedido ficará pendente até a confirmação.':'O pedido foi preparado, mas não foi registrado no site. Envie a mensagem para confirmar disponibilidade, frete e pagamento.'}</p><a className="button dark" href={whatsAppUrl} target="_blank" rel="noreferrer">abrir WhatsApp <ArrowRight size={15}/></a><button className="checkout-finish" onClick={onClose}>Fechar</button></>:<><span className="eyebrow">QUASE LÁ</span><h2 id="checkout-title">Para onde enviamos?</h2><p>Informe seus dados. Vamos registrar os itens e abrir o WhatsApp para combinar o pedido.</p>{error&&<div className="admin-error" role="alert">{error}</div>}<form onSubmit={submit}><label>Seu nome<input autoComplete="name" required minLength="2" maxLength="120" value={values.name} onChange={e=>setValues({...values,name:e.target.value})}/></label><label>Email<input autoComplete="email" type="email" required value={values.email} onChange={e=>setValues({...values,email:e.target.value})}/></label><label>WhatsApp<input autoComplete="tel" type="tel" required value={values.phone} onChange={e=>setValues({...values,phone:e.target.value})}/></label><button className="button dark" disabled={loading}>{loading?'Preparando pedido…':'continuar pelo WhatsApp'} <ArrowRight size={15}/></button></form></>}</section></div>;
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowRight,
+  CheckCircle2,
+  LockKeyhole,
+  MessageCircle,
+  UserRound,
+  X,
+} from "lucide-react";
+
+export default function CheckoutDialog({
+  onClose,
+  onGuestCheckout,
+  onAccountCheckout,
+  user,
+}) {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [whatsAppUrl, setWhatsAppUrl] = useState("");
+  const [registered, setRegistered] = useState(false);
+
+  async function continueCheckout(checkoutAction) {
+    setLoading(true);
+    setError("");
+    const popup = window.open("about:blank", "_blank");
+
+    try {
+      const result = await checkoutAction();
+      setWhatsAppUrl(result.url);
+      setRegistered(result.registered);
+      if (popup) popup.location.href = result.url;
+    } catch (checkoutError) {
+      popup?.close();
+      setError(
+        checkoutError.code === "PGRST202" || checkoutError.code === "42883"
+          ? "A função de checkout não está instalada no Supabase. Execute supabase/admin.sql no SQL Editor depois de schema.sql."
+          : checkoutError.message ||
+              "Não foi possível preparar o pedido. Confira o estoque e tente novamente.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function chooseRegistered() {
+    if (user) {
+      continueCheckout(onAccountCheckout);
+      return;
+    }
+
+    onClose();
+    navigate("/cadastro", { state: { from: "/sacola" } });
+  }
+
+  function chooseLogin() {
+    onClose();
+    navigate("/conta/login", { state: { from: "/sacola" } });
+  }
+
+  return (
+    <div
+      className="checkout-overlay"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !loading) onClose();
+      }}
+    >
+      <section
+        className="checkout-dialog checkout-options"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="checkout-title"
+      >
+        <button
+          className="checkout-close"
+          onClick={onClose}
+          aria-label="Fechar"
+          disabled={loading}
+        >
+          <X size={20} />
+        </button>
+
+        {whatsAppUrl ? (
+          <>
+            <CheckCircle2 size={30} className="checkout-check" />
+            <span className="eyebrow">
+              {registered ? "PEDIDO REGISTRADO" : "PEDIDO PRONTO"}
+            </span>
+            <h2 id="checkout-title">
+              {registered
+                ? "Seu pedido está reservado"
+                : "Continue pelo WhatsApp"}
+            </h2>
+            <p>
+              {registered
+                ? "Conclua a conversa pelo WhatsApp para combinar pagamento e entrega."
+                : "O pedido não foi registrado no site. Envie a mensagem para confirmar disponibilidade, frete e pagamento."}
+            </p>
+            <a
+              className="button dark"
+              href={whatsAppUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              abrir WhatsApp <ArrowRight size={15} />
+            </a>
+            <button className="checkout-finish" onClick={onClose}>
+              Fechar
+            </button>
+          </>
+        ) : (
+          <>
+            <h2 id="checkout-title">Opções de Checkout</h2>
+            <p className="checkout-options-intro">
+              Escolha como deseja continuar:
+            </p>
+
+            <div className="checkout-options-list">
+              <button
+                className="checkout-option checkout-option-register"
+                onClick={chooseRegistered}
+                disabled={loading}
+              >
+                <UserRound aria-hidden="true" />
+                <span>
+                  <strong>Cadastrado</strong>
+                  <small>
+                    {user
+                      ? "Finalizar pedido e acompanhar compras"
+                      : "Fazer cadastro e acompanhar compras"}
+                  </small>
+                </span>
+              </button>
+
+              <button
+                className="checkout-option checkout-option-guest"
+                onClick={() => continueCheckout(onGuestCheckout)}
+                disabled={loading}
+              >
+                <MessageCircle aria-hidden="true" />
+                <span>
+                  <strong>Sem Cadastro</strong>
+                  <small>Enviar via WhatsApp sem cadastro</small>
+                  <small className="checkout-option-note">
+                    O estoque só é reservado ao finalizar com uma conta.
+                  </small>
+                </span>
+              </button>
+
+              <button
+                className="checkout-option checkout-option-login"
+                onClick={chooseLogin}
+                disabled={loading}
+              >
+                <LockKeyhole aria-hidden="true" />
+                <span>
+                  <strong>Já Tenho Conta</strong>
+                  <small>Fazer login para acompanhar minhas compras</small>
+                </span>
+              </button>
+            </div>
+
+            {error && (
+              <div className="admin-error" role="alert">
+                {error}
+              </div>
+            )}
+
+            <p className="checkout-security-note">
+              Ambiente seguro. Seus dados são protegidos.
+            </p>
+          </>
+        )}
+      </section>
+    </div>
+  );
 }

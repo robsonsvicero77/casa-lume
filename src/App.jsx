@@ -72,6 +72,20 @@ function Store(){
     setCartOpen(false);
     return { url, registered };
   }
+  function submitGuestCheckout() {
+    const phone = (import.meta.env.VITE_WHATSAPP_NUMBER || "5511999999999").replace(/\D/g, "");
+    return {
+      url: buildWhatsAppOrderUrl(phone, cart, total),
+      registered: false,
+    };
+  }
+  function submitAccountCheckout() {
+    return submitCheckout({
+      name: customerUser?.user_metadata?.full_name || customerUser?.email || "Cliente",
+      email: customerUser?.email || "",
+      phone: customerUser?.user_metadata?.phone || "",
+    });
+  }
   const shared={products,addToCart,cart,count,total,changeQuantity,openCart:()=>setCartOpen(true),beginCheckout:openCheckout};
   if(isAdmin)return <Routes><Route path="/admin/login" element={<AdminLogin/>}/><Route path="/admin" element={<AdminOnly><AdminDashboard/></AdminOnly>}/><Route path="/admin/produtos" element={<AdminOnly><ProductAdmin/></AdminOnly>}/><Route path="/admin/pedidos" element={<AdminOnly><AdminOrders/></AdminOnly>}/><Route path="/admin/usuarios" element={<AdminOnly><AdminUsers/></AdminOnly>}/><Route path="/admin/clientes" element={<AdminOnly><AdminCustomers/></AdminOnly>}/><Route path="/admin/depoimentos" element={<AdminOnly><AdminTestimonials/></AdminOnly>}/><Route path="*" element={<AdminLogin/>}/></Routes>;
   return <>
@@ -94,7 +108,7 @@ function Store(){
     <FloatingBag count={count} onClick={()=>setCartOpen(true)}/>
     {toast&&<Toast message={toast} openCart={()=>setCartOpen(true)}/>}
     {cartOpen&&<CartDrawer items={cart} count={count} total={total} close={()=>setCartOpen(false)} changeQuantity={changeQuantity} beginCheckout={openCheckout}/>}
-    {checkoutOpen&&<CheckoutDialog onClose={()=>setCheckoutOpen(false)} onSubmit={submitCheckout}/>}
+    {checkoutOpen&&<CheckoutDialog onClose={()=>{setCheckoutOpen(false);setCartOpen(false);}} onGuestCheckout={submitGuestCheckout} onAccountCheckout={submitAccountCheckout} user={customerUser}/>}
   </>;
 }
 export default function App(){return <AdminAuthProvider><CustomerAuthProvider><BrowserRouter><Store/></BrowserRouter></CustomerAuthProvider></AdminAuthProvider>}
