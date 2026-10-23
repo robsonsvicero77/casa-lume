@@ -169,6 +169,50 @@ end; $$;
 revoke all on function public.create_whatsapp_order(text,text,text,jsonb) from public;
 grant execute on function public.create_whatsapp_order(text,text,text,jsonb) to anon,authenticated;
 
+-- Checkout sem conta: registra o pedido, mas deixa o estoque para confirmacao manual.
+create or replace function public.create_whatsapp_guest_order(p_items jsonb)
+returns uuid language plpgsql security definer set search_path = '' as $$
+declare
+  v_order uuid := gen_random_uuid();
+  item jsonb;
+  product_row public.products%rowtype;
+  qty integer;
+  sum_total numeric(10,2) := 0;
+begin
+  if jsonb_typeof(p_items) is distinct from 'array' then
+    raise exception 'Sacola invalida';
+  end if;
+  if jsonb_array_length(p_items) = 0 or jsonb_array_length(p_items) > 30 then
+    raise exception 'Sacola invalida';
+  end if;
+
+  insert into public.orders(id,customer_name,customer_email,customer_phone)
+    values(v_order,'Cliente sem cadastro','sem-cadastro+' || v_order::text || '@whatsapp.local','');
+
+  for item in select value from jsonb_array_elements(p_items) loop
+    qty := (item->>'quantity')::integer;
+    if qty < 1 or qty > 99 then
+      raise exception 'Quantidade invalida';
+    end if;
+
+    select * into product_row
+    from public.products
+    where id = item->>'productId' and active;
+    if not found then
+      raise exception 'Produto indisponivel';
+    end if;
+
+    insert into public.order_items(order_id,product_id,product_name,price,quantity)
+      values(v_order,product_row.id,product_row.name,product_row.price,qty);
+    sum_total := sum_total + product_row.price * qty;
+  end loop;
+
+  update public.orders set total = sum_total where id = v_order;
+  return v_order;
+end; $$;
+revoke all on function public.create_whatsapp_guest_order(jsonb) from public;
+grant execute on function public.create_whatsapp_guest_order(jsonb) to anon,authenticated;
+
 create table if not exists public.testimonials (
   id uuid primary key default gen_random_uuid(), text text not null, author text not null,
   age integer check(age is null or age>0), rating integer not null default 5 check(rating between 1 and 5),

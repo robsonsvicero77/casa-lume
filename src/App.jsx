@@ -45,7 +45,25 @@ function Store(){
   const count=cart.reduce((n,item)=>n+item.qty,0),total=useMemo(()=>cart.reduce((n,item)=>n+item.price*item.qty,0),[cart]);
   const addToCart=product=>{const hasInventory=product.stock!==undefined&&product.stock!==null;if(hasInventory&&Number(product.stock)<1){setToast('Este aroma está sem estoque no momento.');window.setTimeout(()=>setToast(''),2200);return;}setCart(current=>{const item=current.find(row=>row.id===product.id);if(item){if(hasInventory&&item.qty>=Number(product.stock)){setToast(`Temos apenas ${product.stock} unidade(s) de ${product.name}.`);window.setTimeout(()=>setToast(''),2200);return current;}return current.map(row=>row.id===product.id?{...row,qty:row.qty+1}:row);}return [...current,{...product,qty:1}];});setToast(`${product.name} entrou na sacola`);window.setTimeout(()=>setToast(''),2200)};
   const changeQuantity=(id,delta)=>setCart(current=>{const item=current.find(row=>row.id===id);if(delta>0&&item?.stock!==undefined&&item?.stock!==null&&item.qty+delta>Number(item.stock)){setToast(`Temos apenas ${item.stock} unidade(s) de ${item.name}.`);window.setTimeout(()=>setToast(''),2200);return current;}return current.map(row=>row.id===id?{...row,qty:row.qty+delta}:row).filter(row=>row.qty>0);});
-  const openCheckout=()=>setCheckoutOpen(true);
+  function openCheckout() {
+    if (!customerUser) {
+      setCheckoutOpen(true);
+      return;
+    }
+
+    const popup = window.open("about:blank", "_blank");
+    setCartOpen(false);
+    submitAccountCheckout()
+      .then(({ url }) => {
+        if (popup) popup.location.href = url;
+        else window.location.assign(url);
+      })
+      .catch((error) => {
+        popup?.close();
+        setToast(error.message || "Não foi possível preparar o pedido.");
+        window.setTimeout(() => setToast(""), 4000);
+      });
+  }
   async function submitCheckout(customer) {
     const phone = (import.meta.env.VITE_WHATSAPP_NUMBER || "5511999999999").replace(/\D/g, "");
     let orderId = "";
@@ -72,11 +90,31 @@ function Store(){
     setCartOpen(false);
     return { url, registered };
   }
-  function submitGuestCheckout() {
+  async function submitGuestCheckout() {
+    if (!supabase) {
+      throw new Error(
+        "O checkout precisa de uma conexão ativa com a loja para registrar o pedido.",
+      );
+    }
+
+    const { data: orderId, error } = await supabase.rpc(
+      "create_whatsapp_guest_order",
+      {
+        p_items: cart.map((item) => ({
+          productId: item.id,
+          quantity: item.qty,
+        })),
+      },
+    );
+    if (error) throw error;
+
     const phone = (import.meta.env.VITE_WHATSAPP_NUMBER || "5511999999999").replace(/\D/g, "");
+    const url = buildWhatsAppOrderUrl(phone, cart, total, orderId);
+    setCart([]);
+    setCartOpen(false);
     return {
-      url: buildWhatsAppOrderUrl(phone, cart, total),
-      registered: false,
+      url,
+      registered: true,
     };
   }
   function submitAccountCheckout() {

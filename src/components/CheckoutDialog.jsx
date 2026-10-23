@@ -59,6 +59,32 @@ export default function CheckoutDialog({
     navigate("/conta/login", { state: { from: "/sacola" } });
   }
 
+  async function chooseGuest() {
+    setLoading(true);
+    setError("");
+    const popup = window.open("about:blank", "_blank");
+
+    try {
+      const { url } = await onGuestCheckout();
+      if (popup) {
+        popup.opener = null;
+        popup.location.href = url;
+      }
+      onClose();
+      if (!popup) window.location.assign(url);
+    } catch (checkoutError) {
+      popup?.close();
+      setError(
+        checkoutError.code === "PGRST202" || checkoutError.code === "42883"
+          ? "O checkout de visitante não está instalado no Supabase. Execute o arquivo atualizado supabase/admin.sql no SQL Editor."
+          : checkoutError.message ||
+              "Não foi possível registrar o pedido. Tente novamente.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div
       className="checkout-overlay"
@@ -103,6 +129,11 @@ export default function CheckoutDialog({
               href={whatsAppUrl}
               target="_blank"
               rel="noreferrer"
+              onClick={(event) => {
+                event.preventDefault();
+                onClose();
+                window.open(whatsAppUrl, "_blank", "noopener,noreferrer");
+              }}
             >
               abrir WhatsApp <ArrowRight size={15} />
             </a>
@@ -136,7 +167,7 @@ export default function CheckoutDialog({
 
               <button
                 className="checkout-option checkout-option-guest"
-                onClick={() => continueCheckout(onGuestCheckout)}
+                onClick={chooseGuest}
                 disabled={loading}
               >
                 <MessageCircle aria-hidden="true" />
