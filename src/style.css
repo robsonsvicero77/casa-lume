@@ -105,6 +105,9 @@ button {
 .nav a {
   font-size: 1em;
 }
+.nav-account-link {
+  display: none;
+}
 
 .nav a:hover,
 .text-link:hover {
@@ -410,6 +413,7 @@ button {
 }
 .product-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -882,9 +886,9 @@ footer {
     width: 32px;
     height: 32px;
   }
-  .bag {
+  .header-actions {
     margin-left: auto;
-    margin-right: 14px;
+    gap: 8px;
   }
   .bag {
     font-size: 0;
@@ -913,6 +917,12 @@ footer {
   }
   .nav.shown {
     display: flex;
+  }
+  .nav-account-link {
+    display: block;
+  }
+  .account-link {
+    display: none;
   }
   .hero {
     padding: 34px 6% 48px;
@@ -1028,7 +1038,6 @@ footer {
   }
   .product-content {
     align-items: flex-start;
-    flex-direction: column;
     gap: 7px;
   }
   .product-content .add-product {
@@ -1146,8 +1155,8 @@ footer {
     position: absolute;
     top: -3px;
     right: -3px;
-    background: #d5bd99;
-    color: #27372f;
+    background: #d91e53;
+    color: #fff;
     width: 18px;
     height: 18px;
     border-radius: 50%;
@@ -1191,9 +1200,42 @@ footer {
   z-index: 11;
 }
 .header .bag {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 0;
+  padding: 8px;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.account-link {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: #526454;
+}
+.account-link:hover {
+  color: #a2764e;
+}
+.header .bag i {
+  position: absolute;
+  top: -7px;
+  left: 10px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #d91e53;
+  color: #fff;
+  font-size: 10px;
+  font-style: normal;
+  line-height: 1;
 }
 .header .bag > svg {
   display: block;
@@ -1799,7 +1841,7 @@ footer {
 }
 
 /* Keep supporting text readable without changing heading sizes. */
-body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.logo):not(.logo *):not(.bag):not(.bag *):not(.stamp):not(.stamp *) {
+body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.logo):not(.logo *):not(.bag):not(.bag *):not(.float-bag):not(.float-bag *):not(.stamp):not(.stamp *):not(.product-meta):not(.product-meta *) {
   font-size: max(13px, 1em);
 }
 
@@ -1859,7 +1901,7 @@ body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.logo):not(.logo *):no
     height: 34px;
   }
 
-  body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.logo):not(.logo *):not(.bag):not(.bag *) {
+  body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.logo):not(.logo *):not(.bag):not(.bag *):not(.float-bag):not(.float-bag *) {
     font-size: max(12px, 1em);
   }
 
@@ -1870,7 +1912,7 @@ body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.logo):not(.logo *):no
     font-size: 0;
   }
   .header .bag i {
-    font-size: 11px;
+    font-size: 10px;
   }
   .page-hero {
     padding: 18px 6% 36px;
