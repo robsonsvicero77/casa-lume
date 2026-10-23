@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, Flame } from "lucide-react";
+import { ArrowLeft, Check, Eye, EyeOff, Flame } from "lucide-react";
 import { supabase } from "../lib/products.js";
 
 export default function CustomerSignup() {
@@ -14,6 +14,7 @@ export default function CustomerSignup() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function submit(event) {
     event.preventDefault();
@@ -154,16 +155,26 @@ export default function CustomerSignup() {
             </label>
             <label>
               Senha (mínimo de 8 caracteres)
-              <input
-                required
-                type="password"
-                minLength="8"
-                autoComplete="new-password"
-                value={form.password}
-                onChange={(event) =>
-                  setForm({ ...form, password: event.target.value })
-                }
-              />
+              <div className="customer-password-field">
+                <input
+                  required
+                  type={showPassword ? "text" : "password"}
+                  minLength="8"
+                  autoComplete="new-password"
+                  value={form.password}
+                  onChange={(event) =>
+                    setForm({ ...form, password: event.target.value })
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  aria-pressed={showPassword}
+                >
+                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
             </label>
             {error && (
               <div className="admin-error" role="alert">

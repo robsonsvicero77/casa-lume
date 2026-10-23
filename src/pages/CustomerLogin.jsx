@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Flame } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame } from "lucide-react";
 import { supabase } from "../lib/products.js";
 
 export default function CustomerLogin() {
@@ -9,6 +9,7 @@ export default function CustomerLogin() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function submit(event) {
     event.preventDefault();
@@ -80,15 +81,25 @@ export default function CustomerLogin() {
           </label>
           <label>
             Senha
-            <input
-              required
-              type="password"
-              autoComplete="current-password"
-              value={form.password}
-              onChange={(event) =>
-                setForm({ ...form, password: event.target.value })
-              }
-            />
+            <div className="customer-password-field">
+              <input
+                required
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                value={form.password}
+                onChange={(event) =>
+                  setForm({ ...form, password: event.target.value })
+                }
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
           </label>
           {error && (
             <div className="admin-error" role="alert">

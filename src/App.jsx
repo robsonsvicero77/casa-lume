@@ -46,7 +46,32 @@ function Store(){
   const addToCart=product=>{const hasInventory=product.stock!==undefined&&product.stock!==null;if(hasInventory&&Number(product.stock)<1){setToast('Este aroma está sem estoque no momento.');window.setTimeout(()=>setToast(''),2200);return;}setCart(current=>{const item=current.find(row=>row.id===product.id);if(item){if(hasInventory&&item.qty>=Number(product.stock)){setToast(`Temos apenas ${product.stock} unidade(s) de ${product.name}.`);window.setTimeout(()=>setToast(''),2200);return current;}return current.map(row=>row.id===product.id?{...row,qty:row.qty+1}:row);}return [...current,{...product,qty:1}];});setToast(`${product.name} entrou na sacola`);window.setTimeout(()=>setToast(''),2200)};
   const changeQuantity=(id,delta)=>setCart(current=>{const item=current.find(row=>row.id===id);if(delta>0&&item?.stock!==undefined&&item?.stock!==null&&item.qty+delta>Number(item.stock)){setToast(`Temos apenas ${item.stock} unidade(s) de ${item.name}.`);window.setTimeout(()=>setToast(''),2200);return current;}return current.map(row=>row.id===id?{...row,qty:row.qty+delta}:row).filter(row=>row.qty>0);});
   const openCheckout=()=>setCheckoutOpen(true);
-  async function submitCheckout(customer){if(!supabase)throw new Error('O checkout precisa de uma conexão ativa com a loja. Tente novamente mais tarde.');const {data:orderId,error}=await supabase.rpc('create_whatsapp_order',{p_name:customer.name,p_email:customer.email,p_phone:customer.phone,p_items:cart.map(item=>({productId:item.id,quantity:item.qty}))});if(error)throw error;const phone=(import.meta.env.VITE_WHATSAPP_NUMBER||'5511999999999').replace(/\D/g,'');const url=buildWhatsAppOrderUrl(phone,cart,total,orderId);setCart([]);setCartOpen(false);return url;}
+  async function submitCheckout(customer) {
+    const phone = (import.meta.env.VITE_WHATSAPP_NUMBER || "5511999999999").replace(/\D/g, "");
+    let orderId = "";
+    let registered = false;
+
+    if (supabase) {
+      const { data, error } = await supabase.rpc("create_whatsapp_order", {
+        p_name: customer.name,
+        p_email: customer.email,
+        p_phone: customer.phone,
+        p_items: cart.map((item) => ({
+          productId: item.id,
+          quantity: item.qty,
+        })),
+      });
+
+      if (error) throw error;
+      orderId = data;
+      registered = true;
+    }
+
+    const url = buildWhatsAppOrderUrl(phone, cart, total, orderId);
+    setCart([]);
+    setCartOpen(false);
+    return { url, registered };
+  }
   const shared={products,addToCart,cart,count,total,changeQuantity,openCart:()=>setCartOpen(true),beginCheckout:openCheckout};
   if(isAdmin)return <Routes><Route path="/admin/login" element={<AdminLogin/>}/><Route path="/admin" element={<AdminOnly><AdminDashboard/></AdminOnly>}/><Route path="/admin/produtos" element={<AdminOnly><ProductAdmin/></AdminOnly>}/><Route path="/admin/pedidos" element={<AdminOnly><AdminOrders/></AdminOnly>}/><Route path="/admin/usuarios" element={<AdminOnly><AdminUsers/></AdminOnly>}/><Route path="/admin/clientes" element={<AdminOnly><AdminCustomers/></AdminOnly>}/><Route path="/admin/depoimentos" element={<AdminOnly><AdminTestimonials/></AdminOnly>}/><Route path="*" element={<AdminLogin/>}/></Routes>;
   return <>

@@ -13,3 +13,5 @@ body .admin-shell :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
     font-size: max(12px, 1em);
   }
 }
+
+.customer-password-field{position:relative;display:flex;align-items:center}.customer-password-field input{width:100%;padding-right:42px!important}.customer-password-field button{position:absolute;right:7px;top:50%;transform:translateY(-50%);display:grid;place-items:center;padding:6px;border:0;background:transparent;color:#7d8379;cursor:pointer}.customer-password-field button:focus-visible{outline:2px solid #899787;outline-offset:1px}
