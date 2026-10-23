@@ -15,6 +15,7 @@ import NotFoundPage from './pages/NotFoundPage.jsx';
 import AnnouncementBar from './components/AnnouncementBar.jsx';
 import FloatingBag from './components/FloatingBag.jsx';
 import { demoProducts, getProducts, supabase } from './lib/products.js';
+import CustomerAuthProvider, { useCustomerAuth } from './lib/CustomerAuth.jsx';
 import { buildWhatsAppOrderUrl } from './lib/format.js';
 import CheckoutDialog from './components/CheckoutDialog.jsx';
 import AdminLogin from './pages/admin/AdminLogin.jsx';
@@ -27,8 +28,11 @@ import AdminUsers from './pages/admin/AdminUsers.jsx';
 import AdminCustomers from './pages/admin/AdminCustomers.jsx';
 import AdminTestimonials from './pages/admin/AdminTestimonials.jsx';
 import CustomerSignup from './pages/CustomerSignup.jsx';
+import CustomerLogin from './pages/CustomerLogin.jsx';
+import CustomerAccount, { CustomerOnly } from './pages/CustomerAccount.jsx';
 
 function Store(){
+  const { user: customerUser } = useCustomerAuth();
   const [products,setProducts]=useState(demoProducts);
   const [cart,setCart]=useState(()=>{try{return JSON.parse(localStorage.getItem('casa-lume-cart')||'[]')}catch{return []}});
   const [cartOpen,setCartOpen]=useState(false),[toast,setToast]=useState(''),[menuOpen,setMenuOpen]=useState(false);
@@ -47,7 +51,7 @@ function Store(){
   if(isAdmin)return <Routes><Route path="/admin/login" element={<AdminLogin/>}/><Route path="/admin" element={<AdminOnly><AdminDashboard/></AdminOnly>}/><Route path="/admin/produtos" element={<AdminOnly><ProductAdmin/></AdminOnly>}/><Route path="/admin/pedidos" element={<AdminOnly><AdminOrders/></AdminOnly>}/><Route path="/admin/usuarios" element={<AdminOnly><AdminUsers/></AdminOnly>}/><Route path="/admin/clientes" element={<AdminOnly><AdminCustomers/></AdminOnly>}/><Route path="/admin/depoimentos" element={<AdminOnly><AdminTestimonials/></AdminOnly>}/><Route path="*" element={<AdminLogin/>}/></Routes>;
   return <>
     <AnnouncementBar/>
-    <Header count={count} openCart={()=>setCartOpen(true)} menuOpen={menuOpen} setMenuOpen={setMenuOpen}/>
+    <Header count={count} openCart={()=>setCartOpen(true)} menuOpen={menuOpen} setMenuOpen={setMenuOpen} user={customerUser}/>
     <Routes>
       <Route path="/" element={<Home {...shared}/>}/>
       <Route path="/produtos" element={<ProductsPage {...shared}/>}/>
@@ -57,6 +61,8 @@ function Store(){
       <Route path="/contato" element={<ContactPage/>}/>
       <Route path="/duvidas" element={<FAQPage/>}/>
       <Route path="/cadastro" element={<CustomerSignup/>}/>
+      <Route path="/conta/login" element={<CustomerLogin/>}/>
+      <Route path="/conta" element={<CustomerOnly><CustomerAccount products={products} addToCart={addToCart}/></CustomerOnly>}/>
       <Route path="*" element={<NotFoundPage/>}/>
     </Routes>
     <Footer/>
@@ -66,4 +72,4 @@ function Store(){
     {checkoutOpen&&<CheckoutDialog onClose={()=>setCheckoutOpen(false)} onSubmit={submitCheckout}/>}
   </>;
 }
-export default function App(){return <AdminAuthProvider><BrowserRouter><Store/></BrowserRouter></AdminAuthProvider>}
+export default function App(){return <AdminAuthProvider><CustomerAuthProvider><BrowserRouter><Store/></BrowserRouter></CustomerAuthProvider></AdminAuthProvider>}

@@ -1,10 +1,31 @@
-import { ArrowRight, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { ArrowRight, Heart, Plus } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { money } from '../lib/format.js';
+import { useCustomerAuth } from '../lib/CustomerAuth.jsx';
 
 export default function ProductCard({ product, addToCart }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, wishlist, toggleWishlist } = useCustomerAuth();
+  const [favoriteError, setFavoriteError] = useState('');
+  const isFavorite = wishlist.includes(product.id);
   const hasInventory = product.stock !== undefined && product.stock !== null;
   const soldOut = hasInventory && Number(product.stock) < 1;
+
+  async function handleFavorite() {
+    if (!user) {
+      navigate('/conta/login', { state: { from: location.pathname } });
+      return;
+    }
+
+    setFavoriteError('');
+    try {
+      await toggleWishlist(product.id);
+    } catch (error) {
+      setFavoriteError(error.message || 'Não foi possível atualizar sua wishlist.');
+    }
+  }
 
   return (
     <article className="product">
@@ -23,6 +44,17 @@ export default function ProductCard({ product, addToCart }) {
           <ArrowRight size={15} /> ver detalhes
         </span>
       </Link>
+      <button
+        className="product-favorite"
+        type="button"
+        onClick={handleFavorite}
+        aria-label={isFavorite ? `Remover ${product.name} da wishlist` : `Salvar ${product.name} na wishlist`}
+        aria-pressed={isFavorite}
+        title={isFavorite ? 'Remover dos favoritos' : 'Salvar nos favoritos'}
+      >
+        <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
+      </button>
+      {favoriteError && <span className="wishlist-error" role="status">{favoriteError}</span>}
 
       <div className="product-line">
         <Link to={`/produto/${product.id}`}>
@@ -33,10 +65,14 @@ export default function ProductCard({ product, addToCart }) {
 
       <p className="scent">{product.scent}</p>
       <div className="product-content">
-        <small>
-          {product.size || 'Cera vegetal · pavio de algodão'}
-          {hasInventory && !soldOut ? ` · ${product.stock} em estoque` : ''}
-        </small>
+        <div className="product-meta">
+          <small>{product.size || 'Cera vegetal · pavio de algodão'}</small>
+          {hasInventory && (
+            <small className={soldOut ? 'stock-out' : 'stock-count'}>
+              {soldOut ? 'sem estoque' : `${product.stock} em estoque`}
+            </small>
+          )}
+        </div>
 
         <button
           className="add-product"

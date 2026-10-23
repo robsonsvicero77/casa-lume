@@ -9,7 +9,7 @@ export default function ProductCatalog({ products, addToCart }) {
       </div>
       <a className="text-link" href="#ritual">como escolher seu aroma <ArrowUpRight size={15} /></a>
     </div>
-    <div className="grid">
+    <div className="grid product-carousel">
       {products.map(product => <ProductCard key={product.id} product={product} addToCart={addToCart} />)}
     </div>
     <div className="collection-foot">
