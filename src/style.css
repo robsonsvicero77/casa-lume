@@ -813,6 +813,93 @@ footer {
   width: 100%;
   margin-top: 18px;
 }
+.checkout-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  overflow-y: auto;
+  background: #1f292c88;
+}
+.checkout-dialog {
+  position: relative;
+  width: min(460px, 100%);
+  max-height: min(90vh, 760px);
+  overflow-y: auto;
+  padding: 36px;
+  background: #fff;
+  box-shadow: 0 20px 70px #0003;
+  color: #27372f;
+}
+.checkout-dialog h2 {
+  margin: 10px 32px 9px 0;
+  font: 400 30px/1.15 var(--serif);
+}
+.checkout-dialog > p {
+  margin: 0 0 22px;
+  color: #747a70;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.checkout-dialog form {
+  display: grid;
+  gap: 14px;
+}
+.checkout-dialog form label {
+  display: grid;
+  gap: 7px;
+  color: #596359;
+  font-size: 11px;
+}
+.checkout-dialog form input {
+  width: 100%;
+  border: 1px solid #dedfd7;
+  background: #fbfaf7;
+  padding: 12px;
+  color: #27372f;
+  font: inherit;
+}
+.checkout-dialog form input:focus {
+  outline: 2px solid #899787;
+  outline-offset: 1px;
+}
+.checkout-dialog form > button,
+.checkout-dialog > .button {
+  width: 100%;
+  margin-top: 5px;
+}
+.checkout-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  color: #687267;
+  cursor: pointer;
+}
+.checkout-close:disabled {
+  cursor: wait;
+}
+.checkout-check {
+  display: block;
+  margin-bottom: 15px;
+  color: #596f60;
+}
+.checkout-finish {
+  display: block;
+  margin: 15px auto 0;
+  padding: 8px 16px;
+  border: 0;
+  background: transparent;
+  color: #687267;
+  cursor: pointer;
+}
 .continue {
   display: flex;
   align-items: center;
