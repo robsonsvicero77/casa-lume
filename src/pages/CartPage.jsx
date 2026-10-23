@@ -1,7 +1,96 @@
-import { Link } from 'react-router-dom';
-import { ArrowRight, Minus, Plus, ShoppingBag } from 'lucide-react';
-import { money } from '../lib/format.js';
+import { Link } from "react-router-dom";
+import { ArrowRight, Minus, Plus, ShoppingBag } from "lucide-react";
+import { money } from "../lib/format.js";
 
-export default function CartPage({cart,count,total,changeQuantity,beginCheckout}){
-  return <main className="page-shell"><div className="breadcrumbs"><Link to="/">início</Link><span>/</span> sua sacola</div><section className="cart-page"><div className="cart-page-heading"><label className="eyebrow">SEU MOMENTO COMEÇA AQUI</label><h1>Sua sacola <small>({count})</small></h1></div>{cart.length===0?<div className="cart-empty"><ShoppingBag size={30}/><h2>Tem espaço para um aroma.</h2><p>Sua sacola está vazia por enquanto.</p><Link className="button dark" to="/produtos">conhecer a coleção <ArrowRight size={15}/></Link></div>:<div className="cart-page-layout"><div className="cart-page-items">{cart.map(item=><article className="cart-page-item" key={item.id}><Link to={`/produto/${item.id}`}><img src={item.image} alt={`Vela ${item.name}`}/></Link><div><Link to={`/produto/${item.id}`}><h2>{item.name}</h2></Link><p>{item.scent}</p><div className="quantity-picker"><button onClick={()=>changeQuantity(item.id,-1)} aria-label="Diminuir"><Minus size={13}/></button>{item.qty}<button onClick={()=>changeQuantity(item.id,1)} aria-label="Aumentar"><Plus size={13}/></button></div></div><strong>{money(item.price*item.qty)}</strong></article>)}<Link className="text-link" to="/produtos">continuar escolhendo <ArrowRight size={15}/></Link></div><aside className="summary"><h2>Resumo do pedido</h2><p><span>Produtos ({count})</span><span>{money(total)}</span></p><p><span>Frete</span><span>combinar no WhatsApp</span></p><div><strong>Total</strong><strong>{money(total)}</strong></div><small>O envio e o pagamento são combinados com a gente pelo WhatsApp.</small><button className="button dark" onClick={beginCheckout}>finalizar pelo WhatsApp <ArrowRight size={16}/></button></aside></div>}</section></main>;
+export default function CartPage({
+  cart,
+  count,
+  total,
+  changeQuantity,
+  beginCheckout,
+}) {
+  return (
+    <main className="page-shell">
+      <div className="breadcrumbs">
+        <Link to="/">início</Link>
+        <span>/</span> sua sacola
+      </div>
+      <section className="cart-page">
+        <div className="cart-page-heading">
+          <label className="eyebrow">SEU MOMENTO COMEÇA AQUI</label>
+          <h1>
+            Sua sacola <small>({count})</small>
+          </h1>
+        </div>
+        {cart.length === 0 ? (
+          <div className="cart-empty">
+            <ShoppingBag size={30} />
+            <h2>Tem espaço para um aroma.</h2>
+            <p>Sua sacola está vazia por enquanto.</p>
+            <Link className="button dark" to="/produtos">
+              conhecer a coleção <ArrowRight size={15} />
+            </Link>
+          </div>
+        ) : (
+          <div className="cart-page-layout">
+            <div className="cart-page-items">
+              {cart.map((item) => (
+                <article className="cart-page-item" key={item.id}>
+                  <Link to={`/produto/${item.id}`}>
+                    <img src={item.image} alt={`Vela ${item.name}`} />
+                  </Link>
+                  <div>
+                    <Link to={`/produto/${item.id}`}>
+                      <h2>{item.name}</h2>
+                    </Link>
+                    <p>{item.scent}</p>
+                    <div className="quantity-picker">
+                      <button
+                        onClick={() => changeQuantity(item.id, -1)}
+                        aria-label="Diminuir"
+                      >
+                        <Minus size={13} />
+                      </button>
+                      {item.qty}
+                      <button
+                        onClick={() => changeQuantity(item.id, 1)}
+                        aria-label="Aumentar"
+                      >
+                        <Plus size={13} />
+                      </button>
+                    </div>
+                  </div>
+                  <strong>{money(item.price * item.qty)}</strong>
+                </article>
+              ))}
+              <Link className="text-link" to="/produtos">
+                continuar escolhendo <ArrowRight size={15} />
+              </Link>
+            </div>
+            <aside className="summary">
+              <h2>Resumo do pedido</h2>
+              <p>
+                <span>Produtos ({count})</span>
+                <span>{money(total)}</span>
+              </p>
+              <p>
+                <span>Frete</span>
+                <span>combinar no WhatsApp</span>
+              </p>
+              <div>
+                <strong>Total</strong>
+                <strong>{money(total)}</strong>
+              </div>
+              <small>
+                O envio e o pagamento são combinados com a gente pelo WhatsApp.
+              </small>
+              <button className="button dark" onClick={beginCheckout}>
+                finalizar pelo WhatsApp <ArrowRight size={16} />
+              </button>
+            </aside>
+          </div>
+        )}
+      </section>
+    </main>
+  );
 }

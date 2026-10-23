@@ -1,14 +1,206 @@
-import { useEffect, useState } from 'react';
-import { Check, Pencil, Plus, Star, Trash2, X } from 'lucide-react';
-import AdminFrame from './AdminFrame.jsx';
-import { supabase } from '../../lib/products.js';
-const blank={text:'',author:'',age:'',rating:5,is_approved:true};
-export default function AdminTestimonials(){
- const [rows,setRows]=useState([]),[form,setForm]=useState(blank),[editing,setEditing]=useState(''),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
- async function load(){const {data,error:e}=await supabase.from('testimonials').select('*').order('created_at',{ascending:false});if(e)setError(e.message);else setRows(data||[]);setLoading(false);}
- useEffect(()=>{load();},[]);
- async function save(e){e.preventDefault();setSaving(true);setError('');const values={...form,age:form.age?Number(form.age):null,rating:Number(form.rating)};try{const query=editing?supabase.from('testimonials').update(values).eq('id',editing):supabase.from('testimonials').insert(values);const {error:e2}=await query;if(e2)throw e2;setForm(blank);setEditing('');setNotice('Depoimento salvo.');await load();}catch(err){setError(err.message);}finally{setSaving(false);}}
- async function remove(row){if(!confirm(`Remover o depoimento de ${row.author}?`))return;const {error:e}=await supabase.from('testimonials').delete().eq('id',row.id);if(e)setError(e.message);else{setRows(r=>r.filter(x=>x.id!==row.id));setNotice('Depoimento removido.');}}
- function edit(row){setEditing(row.id);setForm({text:row.text,author:row.author,age:row.age||'',rating:row.rating||5,is_approved:row.is_approved});window.scrollTo({top:0,behavior:'smooth'});}
- return <AdminFrame title="Depoimentos" eyebrow="VOZES DA COMUNIDADE"><form className="admin-testimonial-form" onSubmit={save}><h2>{editing?'Editar depoimento':'Adicionar depoimento'}</h2><label>Depoimento<textarea required maxLength="1000" rows="4" value={form.text} onChange={e=>setForm({...form,text:e.target.value})}/></label><div className="admin-form-row"><label>Nome<input required value={form.author} onChange={e=>setForm({...form,author:e.target.value})}/></label><label>Idade (opcional)<input type="number" min="1" value={form.age} onChange={e=>setForm({...form,age:e.target.value})}/></label><label>Nota<select value={form.rating} onChange={e=>setForm({...form,rating:e.target.value})}>{[5,4,3,2,1].map(n=><option key={n} value={n}>{n} estrelas</option>)}</select></label></div><label className="admin-checkbox"><input type="checkbox" checked={form.is_approved} onChange={e=>setForm({...form,is_approved:e.target.checked})}/> Exibir na loja</label>{error&&<div className="admin-error">{error}</div>}<div className="admin-form-actions"><button className="admin-primary" disabled={saving}><Plus size={16}/>{saving?'Salvando…':editing?'Salvar alterações':'Adicionar depoimento'}</button>{editing&&<button type="button" className="admin-quiet" onClick={()=>{setEditing('');setForm(blank)}}>Cancelar</button>}</div></form>{notice&&<div className="admin-success">{notice}<button onClick={()=>setNotice('')}><X size={15}/></button></div>}<h2 className="admin-list-title">Depoimentos cadastrados ({rows.length})</h2>{loading?<p className="admin-empty">Carregando…</p>:rows.length===0?<p className="admin-empty">Nenhum depoimento ainda.</p>:<div className="admin-testimonial-list">{rows.map(row=><article key={row.id}><div className="admin-testimonial-stars">{Array.from({length:row.rating||5},(_,i)=><Star size={14} fill="currentColor" key={i}/>)}</div><p>“{row.text}”</p><footer><strong>{row.author}{row.age?`, ${row.age} anos`:''}</strong><span className={row.is_approved?'admin-status active':'admin-status'}>{row.is_approved?'Publicado':'Oculto'}</span><div><button onClick={()=>edit(row)} title="Editar"><Pencil size={15}/></button><button onClick={()=>remove(row)} title="Excluir"><Trash2 size={15}/></button></div></footer></article>)}</div>}</AdminFrame>;
+import { useEffect, useState } from "react";
+import { Check, Pencil, Plus, Star, Trash2, X } from "lucide-react";
+import AdminFrame from "./AdminFrame.jsx";
+import { supabase } from "../../lib/products.js";
+const blank = { text: "", author: "", age: "", rating: 5, is_approved: true };
+export default function AdminTestimonials() {
+  const [rows, setRows] = useState([]),
+    [form, setForm] = useState(blank),
+    [editing, setEditing] = useState(""),
+    [loading, setLoading] = useState(true),
+    [saving, setSaving] = useState(false),
+    [error, setError] = useState(""),
+    [notice, setNotice] = useState("");
+  async function load() {
+    const { data, error: e } = await supabase
+      .from("testimonials")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (e) setError(e.message);
+    else setRows(data || []);
+    setLoading(false);
+  }
+  useEffect(() => {
+    load();
+  }, []);
+  async function save(e) {
+    e.preventDefault();
+    setSaving(true);
+    setError("");
+    const values = {
+      ...form,
+      age: form.age ? Number(form.age) : null,
+      rating: Number(form.rating),
+    };
+    try {
+      const query = editing
+        ? supabase.from("testimonials").update(values).eq("id", editing)
+        : supabase.from("testimonials").insert(values);
+      const { error: e2 } = await query;
+      if (e2) throw e2;
+      setForm(blank);
+      setEditing("");
+      setNotice("Depoimento salvo.");
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+  async function remove(row) {
+    if (!confirm(`Remover o depoimento de ${row.author}?`)) return;
+    const { error: e } = await supabase
+      .from("testimonials")
+      .delete()
+      .eq("id", row.id);
+    if (e) setError(e.message);
+    else {
+      setRows((r) => r.filter((x) => x.id !== row.id));
+      setNotice("Depoimento removido.");
+    }
+  }
+  function edit(row) {
+    setEditing(row.id);
+    setForm({
+      text: row.text,
+      author: row.author,
+      age: row.age || "",
+      rating: row.rating || 5,
+      is_approved: row.is_approved,
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  return (
+    <AdminFrame title="Depoimentos" eyebrow="VOZES DA COMUNIDADE">
+      <form className="admin-testimonial-form" onSubmit={save}>
+        <h2>{editing ? "Editar depoimento" : "Adicionar depoimento"}</h2>
+        <label>
+          Depoimento
+          <textarea
+            required
+            maxLength="1000"
+            rows="4"
+            value={form.text}
+            onChange={(e) => setForm({ ...form, text: e.target.value })}
+          />
+        </label>
+        <div className="admin-form-row">
+          <label>
+            Nome
+            <input
+              required
+              value={form.author}
+              onChange={(e) => setForm({ ...form, author: e.target.value })}
+            />
+          </label>
+          <label>
+            Idade (opcional)
+            <input
+              type="number"
+              min="1"
+              value={form.age}
+              onChange={(e) => setForm({ ...form, age: e.target.value })}
+            />
+          </label>
+          <label>
+            Nota
+            <select
+              value={form.rating}
+              onChange={(e) => setForm({ ...form, rating: e.target.value })}
+            >
+              {[5, 4, 3, 2, 1].map((n) => (
+                <option key={n} value={n}>
+                  {n} estrelas
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <label className="admin-checkbox">
+          <input
+            type="checkbox"
+            checked={form.is_approved}
+            onChange={(e) =>
+              setForm({ ...form, is_approved: e.target.checked })
+            }
+          />{" "}
+          Exibir na loja
+        </label>
+        {error && <div className="admin-error">{error}</div>}
+        <div className="admin-form-actions">
+          <button className="admin-primary" disabled={saving}>
+            <Plus size={16} />
+            {saving
+              ? "Salvando…"
+              : editing
+                ? "Salvar alterações"
+                : "Adicionar depoimento"}
+          </button>
+          {editing && (
+            <button
+              type="button"
+              className="admin-quiet"
+              onClick={() => {
+                setEditing("");
+                setForm(blank);
+              }}
+            >
+              Cancelar
+            </button>
+          )}
+        </div>
+      </form>
+      {notice && (
+        <div className="admin-success">
+          {notice}
+          <button onClick={() => setNotice("")}>
+            <X size={15} />
+          </button>
+        </div>
+      )}
+      <h2 className="admin-list-title">
+        Depoimentos cadastrados ({rows.length})
+      </h2>
+      {loading ? (
+        <p className="admin-empty">Carregando…</p>
+      ) : rows.length === 0 ? (
+        <p className="admin-empty">Nenhum depoimento ainda.</p>
+      ) : (
+        <div className="admin-testimonial-list">
+          {rows.map((row) => (
+            <article key={row.id}>
+              <div className="admin-testimonial-stars">
+                {Array.from({ length: row.rating || 5 }, (_, i) => (
+                  <Star size={14} fill="currentColor" key={i} />
+                ))}
+              </div>
+              <p>“{row.text}”</p>
+              <footer>
+                <strong>
+                  {row.author}
+                  {row.age ? `, ${row.age} anos` : ""}
+                </strong>
+                <span
+                  className={
+                    row.is_approved ? "admin-status active" : "admin-status"
+                  }
+                >
+                  {row.is_approved ? "Publicado" : "Oculto"}
+                </span>
+                <div>
+                  <button onClick={() => edit(row)} title="Editar">
+                    <Pencil size={15} />
+                  </button>
+                  <button onClick={() => remove(row)} title="Excluir">
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </footer>
+            </article>
+          ))}
+        </div>
+      )}
+    </AdminFrame>
+  );
 }

@@ -1,22 +1,377 @@
-import { useEffect, useState } from 'react';
-import { ArrowLeft, Eye, EyeOff, Flame, LogOut, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from '../../lib/products.js';
-import { money } from '../../lib/format.js';
-import { useAdminAuth } from './AdminAuth.jsx';
+import { useEffect, useState } from "react";
+import {
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  Flame,
+  LogOut,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { supabase } from "../../lib/products.js";
+import { money } from "../../lib/format.js";
+import { useAdminAuth } from "./AdminAuth.jsx";
 
-const empty={id:'',name:'',scent:'',price:'',size:'',tag:'Feita à mão',image:'',stock:0,active:true};
-const fields=[['id','Identificador (URL)','flor-de-algodao'],['name','Nome do produto','Flor de Algodão'],['scent','Perfil aromático','Algodão · musk · baunilha'],['price','Preço (R$)','89.00'],['size','Peso e duração','200 g · até 40 horas'],['tag','Etiqueta','Mais querida'],['stock','Quantidade em estoque','10']];
-export default function ProductAdmin(){
- const {user}=useAdminAuth();const navigate=useNavigate();const [params]=useSearchParams();
- const [products,setProducts]=useState([]),[search,setSearch]=useState(''),[loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState(''),[editing,setEditing]=useState(null),[saving,setSaving]=useState(false),[uploading,setUploading]=useState(false);
- async function load(){if(!supabase){setError('Configure o Supabase para gerenciar produtos.');setLoading(false);return;}setLoading(true);const {data,error:e}=await supabase.from('products').select('*').order('created_at',{ascending:false});if(e)setError(e.message);else{setProducts(data||[]);setError('');}setLoading(false);}
- useEffect(()=>{load();},[]);useEffect(()=>{if(params.get('novo')==='1')setEditing({...empty});},[params]);
- async function save(e){e.preventDefault();setSaving(true);setError('');const oldId=editing.id;const values={...editing,id:oldId.trim().toLowerCase().replace(/\s+/g,'-'),name:editing.name.trim(),price:Number(editing.price),stock:Number(editing.stock),image:editing.image.trim()};try{const q=products.some(p=>p.id===oldId)?supabase.from('products').update(values).eq('id',oldId):supabase.from('products').insert(values);const {error:e2}=await q;if(e2)throw e2;setEditing(null);setNotice('Produto salvo.');await load();}catch(err){setError(err.message||'Falha ao salvar produto.');}finally{setSaving(false);}}
- async function uploadImage(file){if(!file)return;if(!['image/jpeg','image/png','image/webp','image/avif'].includes(file.type)){setError('Use uma imagem JPEG, PNG, WebP ou AVIF.');return;}if(file.size>5*1024*1024){setError('A imagem pode ter no máximo 5 MB.');return;}setUploading(true);setError('');try{const path=`${crypto.randomUUID()}.${file.name.split('.').pop()?.toLowerCase()||'jpg'}`;const {error:e}=await supabase.storage.from('product-images').upload(path,file,{cacheControl:'31536000',contentType:file.type,upsert:false});if(e)throw e;setEditing(current=>({...current,image:supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl}));}catch(err){setError(err.message||'Falha ao enviar imagem.');}finally{setUploading(false);}}
- async function toggle(p){const {error:e}=await supabase.from('products').update({active:!p.active}).eq('id',p.id);if(e)setError(e.message);else{setProducts(rows=>rows.map(x=>x.id===p.id?{...x,active:!p.active}:x));setNotice(p.active?'Produto ocultado da loja.':'Produto publicado na loja.');}}
- async function remove(p){if(!confirm(`Excluir “${p.name}” do catálogo?`))return;const {error:e}=await supabase.from('products').delete().eq('id',p.id);if(e)setError(e.message);else{setProducts(rows=>rows.filter(x=>x.id!==p.id));setNotice('Produto excluído.');}}
- async function logout(){await supabase?.auth.signOut();navigate('/admin/login',{replace:true});}
- const filtered=products.filter(p=>`${p.name} ${p.scent} ${p.id}`.toLowerCase().includes(search.toLowerCase()));
- return <main className="admin-shell"><header className="admin-topbar"><Link className="admin-wordmark" to="/admin"><i><Flame size={18}/></i> casa lume <small>ADMIN</small></Link><div><span>{user?.email}</span><button className="admin-quiet" onClick={logout}><LogOut size={16}/> Sair</button></div></header><section className="admin-content"><Link className="admin-back-inline" to="/admin"><ArrowLeft size={16}/> Painel</Link><div className="admin-heading admin-heading-row"><div><span className="admin-eyebrow">CATÁLOGO</span><h1>Produtos</h1><p>{products.length} produtos cadastrados</p></div><button className="admin-primary admin-add" onClick={()=>setEditing({...empty})}><Plus size={17}/> Novo produto</button></div>{notice&&<div className="admin-success">{notice}<button onClick={()=>setNotice('')}><X size={15}/></button></div>}{error&&<div className="admin-error" role="alert">{error}</div>}<label className="admin-search"><Search size={17}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar produtos"/></label><div className="admin-product-list">{loading?<p className="admin-empty">Carregando produtos…</p>:filtered.length===0?<p className="admin-empty">Nenhum produto encontrado.</p>:filtered.map(p=><article className="admin-product" key={p.id}><img src={p.image} alt=""/><div className="admin-product-info"><div><h2>{p.name}</h2><small>{p.scent} · estoque {p.stock||0}</small></div><strong>{money(p.price)}</strong><span className={p.active?'admin-status active':'admin-status'}>{p.active?'Publicado':'Oculto'}</span></div><div className="admin-product-actions"><button title="Editar" onClick={()=>setEditing({...p,price:String(p.price),stock:Number(p.stock)||0})}><Pencil size={16}/></button><button title={p.active?'Ocultar':'Publicar'} onClick={()=>toggle(p)}>{p.active?<EyeOff size={16}/>:<Eye size={16}/>}</button><button title="Excluir" onClick={()=>remove(p)}><Trash2 size={16}/></button></div></article>)}</div></section>{editing&&<div className="admin-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget&&!saving&&!uploading)setEditing(null)}}><section className="admin-modal"><header><div><span className="admin-eyebrow">CATÁLOGO</span><h2>{products.some(p=>p.id===editing.id)?'Editar produto':'Novo produto'}</h2></div><button onClick={()=>setEditing(null)} aria-label="Fechar"><X/></button></header><form onSubmit={save}>{fields.map(([key,title,placeholder])=><label key={key}>{title}<input required value={editing[key]??''} placeholder={placeholder} onChange={e=>setEditing({...editing,[key]:['price','stock'].includes(key)?Number(e.target.value):e.target.value})} type={['price','stock'].includes(key)?'number':'text'} step={key==='price'?'0.01':undefined} min={['price','stock'].includes(key)?'0':undefined}/></label>)}<label className="admin-image-upload">Imagem do produto<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={e=>{uploadImage(e.target.files?.[0]);e.target.value='';}} disabled={uploading}/><small>{uploading?'Enviando imagem…':'JPEG, PNG, WebP ou AVIF · até 5 MB'}</small>{editing.image&&<img src={editing.image} alt="Prévia da imagem"/>}</label><label className="admin-checkbox"><input type="checkbox" checked={editing.active} onChange={e=>setEditing({...editing,active:e.target.checked})}/> Exibir na loja</label>{error&&<div className="admin-error">{error}</div>}<footer><button className="admin-quiet" type="button" onClick={()=>setEditing(null)}>Cancelar</button><button className="admin-primary" disabled={saving||uploading||!editing.image}>{saving?'Salvando…':'Salvar produto'}</button></footer></form></section></div>}</main>;
+const empty = {
+  id: "",
+  name: "",
+  scent: "",
+  price: "",
+  size: "",
+  tag: "Feita à mão",
+  image: "",
+  stock: 0,
+  active: true,
+};
+const fields = [
+  ["id", "Identificador (URL)", "flor-de-algodao"],
+  ["name", "Nome do produto", "Flor de Algodão"],
+  ["scent", "Perfil aromático", "Algodão · musk · baunilha"],
+  ["price", "Preço (R$)", "89.00"],
+  ["size", "Peso e duração", "200 g · até 40 horas"],
+  ["tag", "Etiqueta", "Mais querida"],
+  ["stock", "Quantidade em estoque", "10"],
+];
+export default function ProductAdmin() {
+  const { user } = useAdminAuth();
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const [products, setProducts] = useState([]),
+    [search, setSearch] = useState(""),
+    [loading, setLoading] = useState(true),
+    [error, setError] = useState(""),
+    [notice, setNotice] = useState(""),
+    [editing, setEditing] = useState(null),
+    [saving, setSaving] = useState(false),
+    [uploading, setUploading] = useState(false);
+  async function load() {
+    if (!supabase) {
+      setError("Configure o Supabase para gerenciar produtos.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    const { data, error: e } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (e) setError(e.message);
+    else {
+      setProducts(data || []);
+      setError("");
+    }
+    setLoading(false);
+  }
+  useEffect(() => {
+    load();
+  }, []);
+  useEffect(() => {
+    if (params.get("novo") === "1") setEditing({ ...empty });
+  }, [params]);
+  async function save(e) {
+    e.preventDefault();
+    setSaving(true);
+    setError("");
+    const oldId = editing.id;
+    const values = {
+      ...editing,
+      id: oldId.trim().toLowerCase().replace(/\s+/g, "-"),
+      name: editing.name.trim(),
+      price: Number(editing.price),
+      stock: Number(editing.stock),
+      image: editing.image.trim(),
+    };
+    try {
+      const q = products.some((p) => p.id === oldId)
+        ? supabase.from("products").update(values).eq("id", oldId)
+        : supabase.from("products").insert(values);
+      const { error: e2 } = await q;
+      if (e2) throw e2;
+      setEditing(null);
+      setNotice("Produto salvo.");
+      await load();
+    } catch (err) {
+      setError(err.message || "Falha ao salvar produto.");
+    } finally {
+      setSaving(false);
+    }
+  }
+  async function uploadImage(file) {
+    if (!file) return;
+    if (
+      !["image/jpeg", "image/png", "image/webp", "image/avif"].includes(
+        file.type,
+      )
+    ) {
+      setError("Use uma imagem JPEG, PNG, WebP ou AVIF.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("A imagem pode ter no máximo 5 MB.");
+      return;
+    }
+    setUploading(true);
+    setError("");
+    try {
+      const path = `${crypto.randomUUID()}.${file.name.split(".").pop()?.toLowerCase() || "jpg"}`;
+      const { error: e } = await supabase.storage
+        .from("product-images")
+        .upload(path, file, {
+          cacheControl: "31536000",
+          contentType: file.type,
+          upsert: false,
+        });
+      if (e) throw e;
+      setEditing((current) => ({
+        ...current,
+        image: supabase.storage.from("product-images").getPublicUrl(path).data
+          .publicUrl,
+      }));
+    } catch (err) {
+      setError(err.message || "Falha ao enviar imagem.");
+    } finally {
+      setUploading(false);
+    }
+  }
+  async function toggle(p) {
+    const { error: e } = await supabase
+      .from("products")
+      .update({ active: !p.active })
+      .eq("id", p.id);
+    if (e) setError(e.message);
+    else {
+      setProducts((rows) =>
+        rows.map((x) => (x.id === p.id ? { ...x, active: !p.active } : x)),
+      );
+      setNotice(
+        p.active ? "Produto ocultado da loja." : "Produto publicado na loja.",
+      );
+    }
+  }
+  async function remove(p) {
+    if (!confirm(`Excluir “${p.name}” do catálogo?`)) return;
+    const { error: e } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", p.id);
+    if (e) setError(e.message);
+    else {
+      setProducts((rows) => rows.filter((x) => x.id !== p.id));
+      setNotice("Produto excluído.");
+    }
+  }
+  async function logout() {
+    await supabase?.auth.signOut();
+    navigate("/admin/login", { replace: true });
+  }
+  const filtered = products.filter((p) =>
+    `${p.name} ${p.scent} ${p.id}`.toLowerCase().includes(search.toLowerCase()),
+  );
+  return (
+    <main className="admin-shell">
+      <header className="admin-topbar">
+        <Link className="admin-wordmark" to="/admin">
+          <i>
+            <Flame size={18} />
+          </i>{" "}
+          casa lume <small>ADMIN</small>
+        </Link>
+        <div>
+          <span>{user?.email}</span>
+          <button className="admin-quiet" onClick={logout}>
+            <LogOut size={16} /> Sair
+          </button>
+        </div>
+      </header>
+      <section className="admin-content">
+        <Link className="admin-back-inline" to="/admin">
+          <ArrowLeft size={16} /> Painel
+        </Link>
+        <div className="admin-heading admin-heading-row">
+          <div>
+            <span className="admin-eyebrow">CATÁLOGO</span>
+            <h1>Produtos</h1>
+            <p>{products.length} produtos cadastrados</p>
+          </div>
+          <button
+            className="admin-primary admin-add"
+            onClick={() => setEditing({ ...empty })}
+          >
+            <Plus size={17} /> Novo produto
+          </button>
+        </div>
+        {notice && (
+          <div className="admin-success">
+            {notice}
+            <button onClick={() => setNotice("")}>
+              <X size={15} />
+            </button>
+          </div>
+        )}
+        {error && (
+          <div className="admin-error" role="alert">
+            {error}
+          </div>
+        )}
+        <label className="admin-search">
+          <Search size={17} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar produtos"
+          />
+        </label>
+        <div className="admin-product-list">
+          {loading ? (
+            <p className="admin-empty">Carregando produtos…</p>
+          ) : filtered.length === 0 ? (
+            <p className="admin-empty">Nenhum produto encontrado.</p>
+          ) : (
+            filtered.map((p) => (
+              <article className="admin-product" key={p.id}>
+                <img src={p.image} alt="" />
+                <div className="admin-product-info">
+                  <div>
+                    <h2>{p.name}</h2>
+                    <small>
+                      {p.scent} · estoque {p.stock || 0}
+                    </small>
+                  </div>
+                  <strong>{money(p.price)}</strong>
+                  <span
+                    className={
+                      p.active ? "admin-status active" : "admin-status"
+                    }
+                  >
+                    {p.active ? "Publicado" : "Oculto"}
+                  </span>
+                </div>
+                <div className="admin-product-actions">
+                  <button
+                    title="Editar"
+                    onClick={() =>
+                      setEditing({
+                        ...p,
+                        price: String(p.price),
+                        stock: Number(p.stock) || 0,
+                      })
+                    }
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button
+                    title={p.active ? "Ocultar" : "Publicar"}
+                    onClick={() => toggle(p)}
+                  >
+                    {p.active ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                  <button title="Excluir" onClick={() => remove(p)}>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+      </section>
+      {editing && (
+        <div
+          className="admin-modal-backdrop"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget && !saving && !uploading)
+              setEditing(null);
+          }}
+        >
+          <section className="admin-modal">
+            <header>
+              <div>
+                <span className="admin-eyebrow">CATÁLOGO</span>
+                <h2>
+                  {products.some((p) => p.id === editing.id)
+                    ? "Editar produto"
+                    : "Novo produto"}
+                </h2>
+              </div>
+              <button onClick={() => setEditing(null)} aria-label="Fechar">
+                <X />
+              </button>
+            </header>
+            <form onSubmit={save}>
+              {fields.map(([key, title, placeholder]) => (
+                <label key={key}>
+                  {title}
+                  <input
+                    required
+                    value={editing[key] ?? ""}
+                    placeholder={placeholder}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        [key]: ["price", "stock"].includes(key)
+                          ? Number(e.target.value)
+                          : e.target.value,
+                      })
+                    }
+                    type={["price", "stock"].includes(key) ? "number" : "text"}
+                    step={key === "price" ? "0.01" : undefined}
+                    min={["price", "stock"].includes(key) ? "0" : undefined}
+                  />
+                </label>
+              ))}
+              <label className="admin-image-upload">
+                Imagem do produto
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  onChange={(e) => {
+                    uploadImage(e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                  disabled={uploading}
+                />
+                <small>
+                  {uploading
+                    ? "Enviando imagem…"
+                    : "JPEG, PNG, WebP ou AVIF · até 5 MB"}
+                </small>
+                {editing.image && (
+                  <img src={editing.image} alt="Prévia da imagem" />
+                )}
+              </label>
+              <label className="admin-checkbox">
+                <input
+                  type="checkbox"
+                  checked={editing.active}
+                  onChange={(e) =>
+                    setEditing({ ...editing, active: e.target.checked })
+                  }
+                />{" "}
+                Exibir na loja
+              </label>
+              {error && <div className="admin-error">{error}</div>}
+              <footer>
+                <button
+                  className="admin-quiet"
+                  type="button"
+                  onClick={() => setEditing(null)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="admin-primary"
+                  disabled={saving || uploading || !editing.image}
+                >
+                  {saving ? "Salvando…" : "Salvar produto"}
+                </button>
+              </footer>
+            </form>
+          </section>
+        </div>
+      )}
+    </main>
+  );
 }

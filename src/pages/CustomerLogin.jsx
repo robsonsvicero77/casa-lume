@@ -1,40 +1,47 @@
-import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Flame } from 'lucide-react';
-import { supabase } from '../lib/products.js';
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft, Flame } from "lucide-react";
+import { supabase } from "../lib/products.js";
 
 export default function CustomerLogin() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
   async function submit(event) {
     event.preventDefault();
-    setError('');
+    setError("");
 
     if (!supabase) {
-      setError('O acesso à conta está temporariamente indisponível.');
+      setError("O acesso à conta está temporariamente indisponível.");
       return;
     }
 
     setSaving(true);
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email: form.email.trim().toLowerCase(),
-      password: form.password,
-    });
+    const { data, error: signInError } = await supabase.auth.signInWithPassword(
+      {
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      },
+    );
 
     if (signInError) {
-      setError('Email ou senha incorretos. Confira os dados e tente novamente.');
+      setError(
+        "Email ou senha incorretos. Confira os dados e tente novamente.",
+      );
       setSaving(false);
       return;
     }
 
-    const { error: profileError } = await supabase.rpc('sync_customer_profile', {
-      p_full_name: data.user.user_metadata?.full_name || data.user.email,
-      p_phone: data.user.user_metadata?.phone || '',
-    });
+    const { error: profileError } = await supabase.rpc(
+      "sync_customer_profile",
+      {
+        p_full_name: data.user.user_metadata?.full_name || data.user.email,
+        p_phone: data.user.user_metadata?.phone || "",
+      },
+    );
 
     if (profileError) {
       await supabase.auth.signOut();
@@ -43,7 +50,7 @@ export default function CustomerLogin() {
       return;
     }
 
-    navigate(location.state?.from || '/conta', { replace: true });
+    navigate(location.state?.from || "/conta", { replace: true });
   }
 
   return (
@@ -52,7 +59,9 @@ export default function CustomerLogin() {
         <ArrowLeft size={16} /> Voltar à loja
       </Link>
       <section className="signup-card">
-        <i><Flame /></i>
+        <i>
+          <Flame />
+        </i>
         <span className="admin-eyebrow">CASA LUME</span>
         <h1>Entre na sua conta</h1>
         <p>Acesse sua wishlist e seus aromas favoritos.</p>
@@ -64,7 +73,9 @@ export default function CustomerLogin() {
               type="email"
               autoComplete="email"
               value={form.email}
-              onChange={(event) => setForm({ ...form, email: event.target.value })}
+              onChange={(event) =>
+                setForm({ ...form, email: event.target.value })
+              }
             />
           </label>
           <label>
@@ -74,12 +85,18 @@ export default function CustomerLogin() {
               type="password"
               autoComplete="current-password"
               value={form.password}
-              onChange={(event) => setForm({ ...form, password: event.target.value })}
+              onChange={(event) =>
+                setForm({ ...form, password: event.target.value })
+              }
             />
           </label>
-          {error && <div className="admin-error" role="alert">{error}</div>}
+          {error && (
+            <div className="admin-error" role="alert">
+              {error}
+            </div>
+          )}
           <button className="admin-primary" disabled={saving}>
-            {saving ? 'Entrando…' : 'Entrar'}
+            {saving ? "Entrando…" : "Entrar"}
           </button>
         </form>
         <p className="customer-auth-switch">

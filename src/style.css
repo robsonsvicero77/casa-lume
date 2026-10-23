@@ -946,7 +946,11 @@ footer {
     margin-top: 11px;
   }
   .note {
+    width: 100%;
     margin-top: 22px;
+  }
+  .note span {
+    width: 40%
   }
   .hero-image {
     height: 370px;
@@ -957,7 +961,7 @@ footer {
     height: 82px;
     right: -13px;
     top: 24px;
-    font-size: 10px;
+    font-size: 11px;
   }
   .scroll {
     bottom: 17px;
@@ -1428,6 +1432,7 @@ footer {
   height: 48px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 17px;
   border: 1px solid #d8d8cf;
   padding: 0 10px;
@@ -1901,7 +1906,7 @@ body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.logo):not(.logo *):no
     height: 34px;
   }
 
-  body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.logo):not(.logo *):not(.bag):not(.bag *):not(.float-bag):not(.float-bag *) {
+  body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.logo):not(.logo *):not(.bag):not(.bag *):not(.float-bag):not(.float-bag *):not(.stamp):not(.stamp *):not(.product-meta):not(.product-meta *) {
     font-size: max(12px, 1em);
   }
 
@@ -2041,5 +2046,9 @@ body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.logo):not(.logo *):no
   }
   .not-found h1 {
     font-size: 44px;
+  }
+  .buy-row {
+    flex-direction: column;
+    gap: 16px;
   }
 }
